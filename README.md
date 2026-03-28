@@ -97,14 +97,29 @@ Edit the CSS variables in `css/style.css`:
 
 ## Deployment
 
-### GitHub Pages
-This blog is configured for GitHub Pages. To deploy:
+### Automatic Deployment with GitHub Actions
+This blog includes GitHub Actions workflows that automatically deploy to GitHub Pages when you push to the `main` branch.
 
-1. Push to the `main` branch
+Two workflows are included:
+1. `.github/workflows/deploy.yml` - Simple deployment
+2. `.github/workflows/static.yml` - Standard GitHub Pages deployment
+
+**To enable automatic deployment:**
+
+1. Push the code to GitHub (already done)
 2. Go to Repository Settings → Pages
-3. Select "Deploy from a branch"
-4. Choose `main` branch and `/ (root)` folder
-5. Save - Your site will be published at `https://username.github.io/openclaw-built-blog/`
+3. Select "GitHub Actions" as the source
+4. The next push will trigger automatic deployment
+
+Your site will be published at: `https://phucsystem-dev.github.io/openclaw-built-blog/`
+
+### Manual Deployment
+If you prefer manual deployment:
+
+1. Go to Repository Settings → Pages
+2. Select "Deploy from a branch"
+3. Choose `main` branch and `/ (root)` folder
+4. Save
 
 ### Custom Domain
 1. Add a `CNAME` file with your domain
