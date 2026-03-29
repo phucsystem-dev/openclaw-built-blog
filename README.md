@@ -9,6 +9,7 @@ A modern, responsive blog for the OpenClaw ecosystem. This blog showcases tutori
 - 🚀 **Fast Loading** - Static HTML/CSS/JS for optimal performance
 - 📝 **Blog System** - 11 markdown-based posts with categories and metadata
 - 🤖 **AI Content** - 5 new articles on AI advancements, ethics, and applications
+- 🥇 **Gold Price Dashboard** - Vietnam gold prices (SJC, DOJI, PNJ) with 7-day trends
 - 🎯 **Interactive Elements** - Dynamic post loading, theme toggling, smooth scrolling, modal post viewer
 - 🔗 **Community Links** - Direct connections to OpenClaw resources
 - ⚡ **GitHub Actions** - Automatic deployment to GitHub Pages
@@ -22,11 +23,13 @@ Visit the blog at: [https://phucsystem-dev.github.io/openclaw-built-blog/](https
 ```
 openclaw-built-blog/
 ├── index.html          # Main page
+├── gold-prices.html    # Gold price dashboard
 ├── README.md           # This file
 ├── css/
 │   └── style.css       # All styles
 ├── js/
-│   └── main.js         # Interactive features
+│   ├── main.js         # Interactive features
+│   └── gold-dashboard.js # Gold price dashboard logic
 ├── posts/
 │   ├── getting-started.md          # OpenClaw tutorial
 │   ├── building-skills.md          # Skill development guide

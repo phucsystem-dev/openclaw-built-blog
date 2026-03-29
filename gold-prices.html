@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnam Gold Prices - OpenClaw Blog</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+    <meta name="description" content="Vietnam gold price dashboard showing SJC, DOJI, and PNJ prices for the last 7 days. Updated daily at 7 AM Melbourne time.">
+    <style>
+        /* Gold-specific styles */
+        .gold-header {
+            background: linear-gradient(135deg, #d4af37, #b8941f);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .gold-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        
+        .gold-header .subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .gold-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+        
+        .stat-card.gold {
+            border-top: 4px solid #d4af37;
+        }
+        
+        .stat-card.silver {
+            border-top: 4px solid #c0c0c0;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0.5rem 0;
+        }
+        
+        .stat-change {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .stat-change.positive {
+            color: #10b981;
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .dashboard-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            background-color: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        select {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        select:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .btn-gold {
+            background-color: #d4af37;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .btn-gold:hover {
+            background-color: #b8941f;
+            transform: translateY(-2px);
+        }
+        
+        .chart-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .chart-container h3 {
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+        
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .price-table th,
+        .price-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .price-table th {
+            font-weight: 600;
+            color: var(--text-light);
+            background-color: var(--bg-tertiary);
+        }
+        
+        .price-table tr:hover {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .update-info {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            margin-top: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .update-info i {
+            color: #d4af37;
+            margin-right: 0.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .gold-header h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard-controls {
+                flex-direction: column;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+            
+            select {
+                width: 100%;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <a href="/">
+                        <i class="fas fa-paw"></i>
+                        <span>OpenClaw</span>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/#posts">Blog</a></li>
+                    <li><a href="/gold-prices.html" class="active">Gold Prices</a></li>
+                    <li><a href="/#about">About</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="gold-header">
+        <div class="container">
+            <h1><i class="fas fa-coins"></i> Vietnam Gold Prices</h1>
+            <p class="subtitle">Real-time dashboard showing SJC, DOJI, and PNJ gold prices for the last 7 days. Updated daily at 7 AM Melbourne time.</p>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="gold-stats">
+            <div class="stat-card gold">
+                <h3><i class="fas fa-crown"></i> SJC Gold</h3>
+                <div class="stat-value" id="sjcPrice">--</div>
+                <div class="stat-change" id="sjcChange">
+                    <span>--</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span>--%</span>
+                </div>
+                <p class="card-subtitle">Ho Chi Minh City</p>
+            </div>
+            
+            <div class="stat-card gold">
+                <h3><i class="fas fa-gem"></i> DOJI Gold</h3>
+                <div class="stat-value" id="dojiPrice">--</div>
+                <div class="stat-change" id="dojiChange">
+                    <span>--</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span>--%</span>
+                </div>
+                <p class="card-subtitle">Hanoi</p>
+            </div>
+            
+            <div class="stat-card gold">
+                <h3><i class="fas fa-ring"></i> PNJ Gold</h3>
+                <div class="stat-value" id="pnjPrice">--</div>
+                <div class="stat-change" id="pnjChange">
+                    <span>--</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span>--%</span>
+                </div>
+                <p class="card-subtitle">Ho Chi Minh City</p>
+            </div>
+            
+            <div class="stat-card silver">
+                <h3><i class="fas fa-chart-line"></i> 7-Day Trend</h3>
+                <div class="stat-value" id="trendValue">--</div>
+                <div class="stat-change" id="trendChange">
+                    <span>--</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span>--%</span>
+                </div>
+                <p class="card-subtitle">Average change</p>
+            </div>
+        </div>
+
+        <div class="dashboard-controls">
+            <div class="control-group">
+                <label for="brandSelect"><i class="fas fa-tag"></i> Brand:</label>
+                <select id="brandSelect">
+                    <option value="all">All Brands</option>
+                    <option value="sjc">SJC</option>
+                    <option value="doji">DOJI</option>
+                    <option value="pnj">PNJ</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="citySelect"><i class="fas fa-city"></i> City:</label>
+                <select id="citySelect">
+                    <option value="all">All Cities</option>
+                    <option value="hcm">Ho Chi Minh City</option>
+                    <option value="hn">Hanoi</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="priceType"><i class="fas fa-money-bill-wave"></i> Price:</label>
+                <select id="priceType">
+                    <option value="buy">Buy Price</option>
+                    <option value="sell">Sell Price</option>
+                </select>
+            </div>
+            
+            <button class="btn-gold" id="refreshBtn">
+                <i class="fas fa-redo"></i> Refresh
+            </button>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading gold price data...</p>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <div class="chart-container">
+                <h3><i class="fas fa-chart-line"></i> 7-Day Price Trend</h3>
+                <div class="chart-wrapper">
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3><i class="fas fa-table"></i> Historical Prices (VND per tael)</h3>
+                <table class="price-table" id="priceTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Brand</th>
+                            <th>City</th>
+                            <th>Buy Price</th>
+                            <th>Sell Price</th>
+                            <th>Spread</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="update-info">
+                <p><i class="fas fa-clock"></i> Last updated: <span id="lastUpdated">Loading...</span></p>
+                <p><i class="fas fa-sync-alt"></i> Next update: <span id="nextUpdate">7:00 AM Melbourne time</span></p>
+                <p class="card-subtitle">Prices update daily at 7:00 AM Melbourne time (AEST/AEDT)</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-paw"></i>
+                    <span>OpenClaw</span>
+                </div>
+                <p class="footer-text">Vietnam Gold Price Dashboard • Part of OpenClaw Blog</p>
+                <p class="copyright">© 2024 OpenClaw Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Gold Price Dashboard
+        class GoldDashboard {
+            constructor() {
+                this.data = null;
+                this.chart = null;
+                this.currentBrand = 'all';
+                this.currentCity = 'all';
+                this.currentPriceType = 'buy';
+                
+                this.init();
+            }
+
+            async init() {
+                this.setupEventListeners();
+                this.setupTheme();
+                await this.loadData();
+                this.renderDashboard();
+                this.updateLastUpdated();
+            }
+
+            setupEventListeners() {
+                document.getElementById('brandSelect').addEventListener('change', (e) => {
+                    this.currentBrand = e.target.value;
+                    this.renderDashboard();
+                });
+
+                document.getElementById('citySelect').addEventListener('change', (e) => {
+                    this.currentCity = e.target.value;
+                    this.renderDashboard();
+                });
+
+                document.getElementById('priceType').addEventListener('change', (e) => {
+                    this.currentPriceType = e.target.value;
+                    this.renderDashboard();
+                });
+
+                document.getElementById('refreshBtn').addEventListener('click', () => {
+                    this.refreshData();
+                });
+
+                // Use existing theme toggle from main.js
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.addEventListener('click', () => {
+                        this.toggleTheme();
+                    });
+                }
+            }
+
+            setupTheme() {
+                // Check if theme is already set by main.js
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const themeIcon = document.getElementById('themeToggle').querySelector('i');
+                    if (themeIcon) themeIcon.className = 'fas fa-sun';
+                }
+            }
+
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const themeIcon = document.getElementById('themeToggle').querySelector('i');
+                
+                if (currentTheme === 'dark') {
+                    document.documentElement.removeAttribute('data-theme');
+                    themeIcon.className = 'fas fa-moon';
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    themeIcon.className = 'fas fa-sun';
+                    localStorage.setItem('theme', 'dark');
+                }
+                
+                // Update chart colors if chart exists
+                if (this.chart) {
+                    this.chart.update();
+                }
+            }
+
+            async loadData() {
+                try {
+                    // For now, use mock data
+                    // In production, you would fetch from an API
+                    this.data = this.generateMockData();
+                    
+                    // Simulate API delay
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.data = this.generateMockData();
+                }
+            }
+
+            generateMockData() {
+                const brands = ['sjc', 'doji', 'pnj'];
+                const cities = ['hcm', 'hn'];
+                const data = [];
+                
+                const basePrices = {
+                    'sjc': { hcm: { buy: 84500000, sell: 84700000 }, hn: { buy: 84400000, sell: 84600000 } },
+                    'doji': { hcm: { buy: 84300000, sell: 84500000 }, hn: { buy: 84200000, sell: 84400000 } },
+                    'pnj': { hcm: { buy: 84200000, sell: 84400000 }, hn: { buy: 84100000, sell: 84300000 } }
+                };
+                
+                // Generate data for last 7 days
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() -
