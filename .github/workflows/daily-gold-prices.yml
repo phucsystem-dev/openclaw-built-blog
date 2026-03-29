@@ -1,0 +1,103 @@
+name: Daily Gold Price Collection
+
+on:
+  schedule:
+    # Run daily at 7:00 AM Melbourne time (21:00 UTC for AEST, 20:00 UTC for AEDT)
+    # Using 20:00 UTC to cover both AEST and AEDT (7 AM Melbourne = 20:00 UTC in winter, 21:00 UTC in summer)
+    - cron: '0 20 * * *'
+  workflow_dispatch:  # Allow manual triggering
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/fetch_gold_prices.py'
+      - '.github/workflows/daily-gold-prices.yml'
+
+jobs:
+  collect-gold-prices:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pytz
+    
+    - name: Create data directory
+      run: mkdir -p data
+    
+    - name: Fetch and save gold prices
+      run: |
+        python scripts/fetch_gold_prices.py
+      env:
+        # Add your API keys here when ready:
+        # VNAPPMOB_API_KEY: ${{ secrets.VNAPPMOB_API_KEY }}
+        # METALPRICEAPI_KEY: ${{ secrets.METALPRICEAPI_KEY }}
+    
+    - name: Commit and push data files
+      run: |
+        # Configure git
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        
+        # Check if there are changes
+        if git diff --quiet; then
+          echo "No changes to commit"
+        else
+          # Add data files
+          git add data/
+          
+          # Commit with timestamp
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          git commit -m "📊 Daily gold price update - $TIMESTAMP"
+          
+          # Push changes
+          git push
+        fi
+    
+    - name: Update gold dashboard page
+      run: |
+        # Create or update the visualization page
+        python scripts/update_dashboard.py
+        
+        # Check if visualization was updated
+        if git diff --quiet; then
+          echo "No visualization updates"
+        else
+          git add gold-prices.html js/gold-dashboard.js
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          git commit -m "📈 Update gold dashboard visualization - $TIMESTAMP"
+          git push
+        fi
+    
+    - name: Create workflow summary
+      if: always()
+      run: |
+        echo "## Daily Gold Price Collection" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Run Time:** $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Count data files
+        DATA_FILES=$(find data -name "gold-prices-*.md" | wc -l)
+        echo "**Total Data Files:** $DATA_FILES" >> $GITHUB_STEP_SUMMARY
+        
+        # List recent files
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Recent Data Files:**" >> $GITHUB_STEP_SUMMARY
+        find data -name "gold-prices-*.md" -exec basename {} \; | sort -r | head -5 | while read file; do
+          echo "- $file" >> $GITHUB_STEP_SUMMARY
+        done
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Next Run:** Scheduled for 7:00 AM Melbourne time tomorrow" >> $GITHUB_STEP_SUMMARY

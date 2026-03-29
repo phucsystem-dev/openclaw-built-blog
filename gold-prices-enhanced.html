@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnam Gold Prices - Historical Dashboard - OpenClaw Blog</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+    <meta name="description" content="Historical Vietnam gold price dashboard with interactive charts for SJC, DOJI, and PNJ prices. View 1 week, 2 weeks, 1 month, and longer time scales.">
+    <style>
+        /* Enhanced dashboard styles */
+        .gold-header {
+            background: linear-gradient(135deg, #d4af37, #b8941f);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .gold-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .dashboard-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            background-color: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        select, .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        select:hover, .btn:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .btn-gold {
+            background-color: #d4af37;
+            color: white;
+            border: none;
+        }
+        
+        .btn-gold:hover {
+            background-color: #b8941f;
+            transform: translateY(-2px);
+        }
+        
+        .btn-export {
+            background-color: #10b981;
+            color: white;
+            border: none;
+        }
+        
+        .btn-export:hover {
+            background-color: #0da271;
+            transform: translateY(-2px);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .chart-container h3 {
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+        
+        .data-table-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+        
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .price-table th,
+        .price-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .price-table th {
+            font-weight: 600;
+            color: var(--text-light);
+            background-color: var(--bg-tertiary);
+        }
+        
+        .update-info {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            margin-top: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .gold-header h1 {
+                font-size: 2rem;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-controls {
+                flex-direction: column;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+            
+            select, .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <a href="/">
+                        <i class="fas fa-paw"></i>
+                        <span>OpenClaw</span>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/#posts">Blog</a></li>
+                    <li><a href="/gold-prices.html">Simple View</a></li>
+                    <li><a href="/gold-prices-enhanced.html" class="active">Advanced View</a></li>
+                    <li><a href="/#about">About</a></li>
+                </ul>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="gold-header">
+        <div class="container">
+            <h1><i class="fas fa-chart-line"></i> Vietnam Gold Prices - Historical Dashboard</h1>
+            <p class="subtitle">Interactive historical dashboard with multiple time scales (1 week, 2 weeks, 1 month, 3 months, 6 months, 1 year). Data collected daily at 7 AM Melbourne time.</p>
+        </div>
+    </div>
+
+    <main class="container">
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Total Records</div>
+                <div class="stat-value" id="totalRecords">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Date Range</div>
+                <div class="stat-value" id="dateRange">--</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Brands</div>
+                <div class="stat-value" id="totalBrands">3</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Days</div>
+                <div class="stat-value" id="totalDays">0</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="dashboard-controls">
+            <div class="control-group">
+                <label for="timeScale"><i class="fas fa-calendar-alt"></i> Time Scale:</label>
+                <select id="timeScale">
+                    <option value="1week">1 Week</option>
+                    <option value="2weeks">2 Weeks</option>
+                    <option value="1month" selected>1 Month</option>
+                    <option value="3months">3 Months</option>
+                    <option value="6months">6 Months</option>
+                    <option value="1year">1 Year</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="brandFilter"><i class="fas fa-tag"></i> Brand:</label>
+                <select id="brandFilter">
+                    <option value="all">All Brands</option>
+                    <option value="SJC">SJC</option>
+                    <option value="DOJI">DOJI</option>
+                    <option value="PNJ">PNJ</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="cityFilter"><i class="fas fa-city"></i> City:</label>
+                <select id="cityFilter">
+                    <option value="all">All Cities</option>
+                    <option value="Ho Chi Minh City">Ho Chi Minh City</option>
+                    <option value="Hanoi">Hanoi</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-gold" id="refreshBtn">
+                <i class="fas fa-redo"></i> Refresh
+            </button>
+            
+            <div class="control-group">
+                <button class="btn btn-export" id="exportCSV">
+                    <i class="fas fa-file-csv"></i> CSV
+                </button>
+                <button class="btn btn-export" id="exportJSON">
+                    <i class="fas fa-file-code"></i> JSON
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading historical gold price data...</p>
+            <p class="card-subtitle">This may take a moment as we load multiple time scales of data</p>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard" style="display: none;">
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-line"></i> Price Trend</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="priceTrendChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-bar"></i> Brand Comparison</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="brandComparisonChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-radar"></i> Spread Analysis</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="spreadAnalysisChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="data-table-container">
+                <h3><i class="fas fa-table"></i> Historical Data Table</h3>
+                <div style="overflow-x: auto;">
+                    <table class="price-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Brand</th>
+                                <th>City</th>
+                                <th>Buy Price (VND/tael)</th>
+                                <th>Sell Price (VND/tael)</th>
+                                <th>Spread</th>
+                                <th>Spread %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Update Information -->
+            <div class="update-info">
+                <p><i class="fas fa-clock"></i> Last updated: <span id="lastUpdated">Loading...</span></p>
+                <p><i class="fas fa-sync-alt"></i> Next scheduled update: <span id="nextUpdate">7:00 AM Melbourne time tomorrow</span></p>
+                <p class="card-subtitle">Data is collected daily at 7:00 AM Melbourne time (AEST/AEDT) via GitHub Actions</p>
+                <p class="card-subtitle">View <a href="/gold-prices.html">simple dashboard</a> for current prices only</p>
+            </div>
+            
+            <!-- Data Collection Info -->
+            <div class="card" style="margin-top: 2rem;">
+                <h3><i class="fas fa-info-circle"></i> About This Dashboard</h3>
+                <p>This dashboard visualizes historical Vietnam gold price data collected through an automated system:</p>
+                <ul>
+                    <li><strong>Data Source:</strong> Daily collection via GitHub Actions at 7 AM Melbourne time</li>
+                    <li><strong>Storage:</strong> Markdown files in the repository's <code>data/</code> directory</li>
+                    <li><strong>Brands:</strong> SJC, DOJI, PNJ (major Vietnamese gold brands)</li>
+                    <li><strong>Cities:</strong> Ho Chi Minh City and Hanoi</li>
+                    <li><strong>Time Scales:</strong> View 1 week, 2 weeks, 1 month, 3 months, 6 months, or 1 year of data</li>
+                    <li><strong>Export:</strong> Download data as CSV or JSON for analysis</li>
+                </ul>
+                <p>For real-time API integration, configure API keys from VNAppMob or MetalPriceAPI in the GitHub Actions workflow.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-paw"></i>
+                    <span>OpenClaw</span>
+                </div>
+                <p class="footer-text">Vietnam Gold Price Historical Dashboard • Part of OpenClaw Blog</p>
+                <p class="copyright">© 2024 OpenClaw Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load historical data if available -->
+    <script src="js/gold-data.js" defer></script>
+    
+    <!-- Enhanced dashboard -->
+    <script src="js/gold-dashboard-enhanced.js" defer></script>
+    
+    <script>
+        // Initialize dashboard when everything is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait a bit for gold-data.js to load
+            setTimeout(() => {
+                window.goldDashboard = new EnhancedGoldDashboard();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
