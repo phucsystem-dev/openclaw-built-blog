@@ -10,6 +10,11 @@ A modern, responsive blog for the OpenClaw ecosystem. This blog showcases tutori
 - 📝 **Blog System** - 11 markdown-based posts with categories and metadata
 - 🤖 **AI Content** - 5 new articles on AI advancements, ethics, and applications
 - 🥇 **Gold Price Dashboard** - Vietnam gold prices (SJC, DOJI, PNJ) with 7-day trends
+- 📊 **Historical Data Collection** - Automated daily data collection at 7 AM Melbourne time
+- 📈 **Multiple Time Scales** - View 1 week, 2 weeks, 1 month, 3 months, 6 months, 1 year of data
+- 🎨 **Interactive Charts** - Price trends, brand comparison, spread analysis
+- 📁 **Data Storage** - Markdown files as time-series database
+- 🔄 **GitHub Actions Automation** - Scheduled daily updates and data processing
 - 🎯 **Interactive Elements** - Dynamic post loading, theme toggling, smooth scrolling, modal post viewer
 - 🔗 **Community Links** - Direct connections to OpenClaw resources
 - ⚡ **GitHub Actions** - Automatic deployment to GitHub Pages
@@ -23,13 +28,24 @@ Visit the blog at: [https://phucsystem-dev.github.io/openclaw-built-blog/](https
 ```
 openclaw-built-blog/
 ├── index.html          # Main page
-├── gold-prices.html    # Gold price dashboard
+├── gold-prices.html          # Simple gold price dashboard
+├── gold-prices-enhanced.html  # Advanced historical dashboard
+├── GOLD_DATA_SYSTEM.md        # Gold data system documentation
 ├── README.md           # This file
 ├── css/
 │   └── style.css       # All styles
 ├── js/
-│   ├── main.js         # Interactive features
-│   └── gold-dashboard.js # Gold price dashboard logic
+│   ├── main.js                 # Interactive features
+│   ├── gold-dashboard.js       # Gold price dashboard logic
+│   ├── gold-dashboard-enhanced.js # Enhanced dashboard with historical data
+│   └── gold-data.js            # Auto-generated historical data
+├── scripts/
+│   ├── fetch_gold_prices.py    # Daily data collection script
+│   ├── update_dashboard.py     # Dashboard update script
+│   └── requirements.txt        # Python dependencies
+├── data/                       # Historical gold price data storage
+│   ├── gold-prices-*.md        # Daily data files
+│   └── GOLD_PRICES_SUMMARY.md  # Data summary
 ├── posts/
 │   ├── getting-started.md          # OpenClaw tutorial
 │   ├── building-skills.md          # Skill development guide
@@ -43,9 +59,10 @@ openclaw-built-blog/
 │   ├── practical-ai-applications-2024.md
 │   └── future-ai-assistants-2024.md
 ├── images/             # Blog images (placeholder)
-├── .github/workflows/  # GitHub Actions
+├── .github/workflows/          # GitHub Actions
 │   ├── deploy.yml
-│   └── static.yml
+│   ├── static.yml
+│   └── daily-gold-prices.yml   # Daily gold price collection
 └── .gitignore          # Git ignore rules
 ```
 
