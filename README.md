@@ -7,9 +7,11 @@ A modern, responsive blog for the OpenClaw ecosystem. This blog showcases tutori
 - 🎨 **Modern Design** - Clean, responsive layout with dark/light theme support
 - 📱 **Mobile Friendly** - Works perfectly on all device sizes
 - 🚀 **Fast Loading** - Static HTML/CSS/JS for optimal performance
-- 📝 **Blog System** - Markdown-based posts with categories and metadata
-- 🎯 **Interactive Elements** - Dynamic post loading, theme toggling, smooth scrolling
+- 📝 **Blog System** - 11 markdown-based posts with categories and metadata
+- 🤖 **AI Content** - 5 new articles on AI advancements, ethics, and applications
+- 🎯 **Interactive Elements** - Dynamic post loading, theme toggling, smooth scrolling, modal post viewer
 - 🔗 **Community Links** - Direct connections to OpenClaw resources
+- ⚡ **GitHub Actions** - Automatic deployment to GitHub Pages
 
 ## Live Demo
 
@@ -26,9 +28,21 @@ openclaw-built-blog/
 ├── js/
 │   └── main.js         # Interactive features
 ├── posts/
-│   ├── getting-started.md
-│   └── building-skills.md
+│   ├── getting-started.md          # OpenClaw tutorial
+│   ├── building-skills.md          # Skill development guide
+│   ├── privacy-first-ai-assistants.md
+│   ├── integrating-home-automation.md
+│   ├── multi-model-ai-support.md
+│   ├── deploying-raspberry-pi.md
+│   ├── ai-advancements-2024.md     # AI breakthroughs
+│   ├── open-source-ai-projects-2024.md
+│   ├── ai-ethics-privacy-2024.md   # Ethics guide
+│   ├── practical-ai-applications-2024.md
+│   └── future-ai-assistants-2024.md
 ├── images/             # Blog images (placeholder)
+├── .github/workflows/  # GitHub Actions
+│   ├── deploy.yml
+│   └── static.yml
 └── .gitignore          # Git ignore rules
 ```
 

@@ -130,6 +130,51 @@ const blogPosts = [
         date: "2024-02-15",
         readTime: "12 min",
         icon: "fas fa-microchip"
+    },
+    {
+        id: 7,
+        title: "The 7 Most Groundbreaking AI Breakthroughs of 2024",
+        excerpt: "From multimodal understanding to agentic systems, discover the AI advancements shaping 2024.",
+        category: "AI Research",
+        date: "2024-03-28",
+        readTime: "8 min",
+        icon: "fas fa-lightbulb"
+    },
+    {
+        id: 8,
+        title: "Top Trending Open-Source AI Projects on GitHub",
+        excerpt: "Discover the most exciting open-source AI projects of 2024 and learn how to integrate them with OpenClaw.",
+        category: "Open Source",
+        date: "2024-03-27",
+        readTime: "10 min",
+        icon: "fab fa-github"
+    },
+    {
+        id: 9,
+        title: "AI Ethics & Data Privacy: A 2024 Guide for OpenClaw Developers",
+        excerpt: "Learn how to build ethical, privacy-preserving AI skills with OpenClaw.",
+        category: "Ethics",
+        date: "2024-03-26",
+        readTime: "12 min",
+        icon: "fas fa-balance-scale"
+    },
+    {
+        id: 10,
+        title: "How AI is Transforming Business Automation in 2024",
+        excerpt: "Discover real-world AI automation use cases and implement them with OpenClaw for maximum productivity.",
+        category: "Applications",
+        date: "2024-03-25",
+        readTime: "15 min",
+        icon: "fas fa-robot"
+    },
+    {
+        id: 11,
+        title: "AI Agents in 2024: What's Next for Autonomous Digital Assistance?",
+        excerpt: "Explore the evolution of AI assistants from chatbots to autonomous agents.",
+        category: "Future Trends",
+        date: "2024-03-24",
+        readTime: "14 min",
+        icon: "fas fa-crystal-ball"
     }
 ];
 
@@ -180,18 +225,142 @@ function loadBlogPosts() {
     });
 }
 
-// Show post modal (simulated for now)
+// Show post modal with actual content
 function showPostModal(postId) {
     const post = blogPosts.find(p => p.id === parseInt(postId));
     
     if (!post) return;
     
-    // In a real implementation, this would fetch and display full post content
-    // For now, show an alert with post details
-    alert(`Opening: ${post.title}\n\nThis would display the full blog post content in a real implementation.`);
+    // Map post IDs to markdown files
+    const postFiles = {
+        1: 'getting-started.md',
+        2: 'building-skills.md',
+        3: 'privacy-first-ai-assistants.md', // Note: This post doesn't exist yet
+        4: 'integrating-home-automation.md', // Note: This post doesn't exist yet
+        5: 'multi-model-ai-support.md', // Note: This post doesn't exist yet
+        6: 'deploying-raspberry-pi.md', // Note: This post doesn't exist yet
+        7: 'ai-advancements-2024.md',
+        8: 'open-source-ai-projects-2024.md',
+        9: 'ai-ethics-privacy-2024.md',
+        10: 'practical-ai-applications-2024.md',
+        11: 'future-ai-assistants-2024.md'
+    };
     
-    // Log to console for debugging
-    console.log(`Opening post: ${post.title} (ID: ${postId})`);
+    const filename = postFiles[postId];
+    
+    if (!filename) {
+        // Fallback to alert for posts without markdown files
+        alert(`Opening: ${post.title}\n\nFull post content coming soon!`);
+        return;
+    }
+    
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.className = 'post-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-header">
+                <div class="post-meta">
+                    <span class="post-category">${post.category}</span>
+                    <span>${post.date}</span>
+                    <span>•</span>
+                    <span>${post.readTime} read</span>
+                </div>
+                <h2 class="modal-title">${post.title}</h2>
+                <p class="modal-excerpt">${post.excerpt}</p>
+            </div>
+            <div class="modal-body" id="postContent-${postId}">
+                <div class="loading">Loading post content...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal">Close</button>
+                <a href="../#contact" class="btn btn-primary">Join Discussion</a>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add event listeners
+    modal.querySelector('.modal-close').addEventListener('click', () => closeModal(modal));
+    modal.querySelector('.close-modal').addEventListener('click', () => closeModal(modal));
+    modal.querySelector('.modal-overlay').addEventListener('click', () => closeModal(modal));
+    
+    // Load post content
+    loadPostContent(postId, filename);
+    
+    // Prevent body scrolling
+    document.body.style.overflow = 'hidden';
+}
+
+// Load post content from markdown file
+async function loadPostContent(postId, filename) {
+    try {
+        const response = await fetch(`posts/${filename}`);
+        if (!response.ok) throw new Error('Post not found');
+        
+        const markdown = await response.text();
+        const contentElement = document.getElementById(`postContent-${postId}`);
+        
+        // Simple markdown to HTML conversion (basic)
+        const html = convertMarkdownToHtml(markdown);
+        contentElement.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading post:', error);
+        const contentElement = document.getElementById(`postContent-${postId}`);
+        contentElement.innerHTML = `
+            <div class="error-message">
+                <p>Unable to load post content. Please try again later.</p>
+                <p>Error: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Basic markdown to HTML conversion
+function convertMarkdownToHtml(markdown) {
+    // Remove frontmatter if present
+    let content = markdown.replace(/^---[\s\S]*?---\n/, '');
+    
+    // Convert headers
+    content = content.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    content = content.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    content = content.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    
+    // Convert bold and italic
+    content = content.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Convert lists
+    content = content.replace(/^- (.*$)/gim, '<li>$1</li>');
+    content = content.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
+    
+    // Convert code blocks
+    content = content.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+    content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+    
+    // Convert paragraphs
+    content = content.replace(/^(?!<[a-z])(?!<\/[a-z]>)(?!<h[1-6]>)(?!<ul>)(?!<li>)(?!<pre>)(?!<code>)(.*$)/gim, '<p>$1</p>');
+    
+    // Convert links
+    content = content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    
+    // Clean up nested paragraphs in lists
+    content = content.replace(/<li><p>(.*?)<\/p><\/li>/g, '<li>$1</li>');
+    
+    return content;
+}
+
+// Close modal
+function closeModal(modal) {
+    document.body.style.overflow = '';
+    if (modal && modal.parentNode) {
+        modal.parentNode.removeChild(modal);
+    }
 }
 
 // Simulate loading more posts on scroll

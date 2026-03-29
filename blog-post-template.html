@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}} - OpenClaw Blog</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <a href="../">
+                        <i class="fas fa-paw"></i>
+                        <span>OpenClaw</span>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="../">Home</a></li>
+                    <li><a href="../#posts">Posts</a></li>
+                    <li><a href="../#about">About</a></li>
+                    <li><a href="../#contact">Contact</a></li>
+                </ul>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="blog-post">
+            <div class="post-header">
+                <div class="post-meta">
+                    <span class="post-category">{{CATEGORY}}</span>
+                    <span>{{DATE}}</span>
+                    <span>•</span>
+                    <span>{{READTIME}} read</span>
+                </div>
+                <h1 class="post-title">{{TITLE}}</h1>
+                <p class="post-excerpt">{{EXCERPT}}</p>
+                <div class="post-author">
+                    <i class="fas fa-user"></i>
+                    <span>By {{AUTHOR}}</span>
+                </div>
+            </div>
+
+            <div class="post-content">
+                {{CONTENT}}
+            </div>
+
+            <div class="post-footer">
+                <div class="post-tags">
+                    <i class="fas fa-tags"></i>
+                    <span class="tag">AI</span>
+                    <span class="tag">OpenClaw</span>
+                    <span class="tag">{{CATEGORY}}</span>
+                </div>
+                <div class="post-actions">
+                    <a href="../" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Blog
+                    </a>
+                    <a href="../#contact" class="btn btn-primary">
+                        <i class="fas fa-comment"></i> Join Discussion
+                    </a>
+                </div>
+            </div>
+        </article>
+
+        <section class="related-posts">
+            <h2>Related Articles</h2>
+            <div class="posts-grid" id="relatedGrid">
+                <!-- Related posts will be loaded dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-paw"></i>
+                    <span>OpenClaw</span>
+                </div>
+                <p class="footer-text">Built with OpenClaw • Open source personal assistant framework</p>
+                <p class="copyright">© 2024 OpenClaw Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        // Load related posts
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentCategory = '{{CATEGORY}}';
+            const currentId = {{ID}};
+            
+            // Filter posts by category, excluding current post
+            const relatedPosts = blogPosts.filter(post => 
+                post.category === currentCategory && post.id !== currentId
+            ).slice(0, 3);
+            
+            if (relatedPosts.length > 0) {
+                const relatedGrid = document.getElementById('relatedGrid');
+                relatedPosts.forEach(post => {
+                    const postCard = document.createElement('article');
+                    postCard.className = 'post-card';
+                    postCard.innerHTML = `
+                        <div class="post-image">
+                            <i class="${post.icon}"></i>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-meta">
+                                <span class="post-category">${post.category}</span>
+                                <span>${post.date}</span>
+                            </div>
+                            <h3 class="post-title">${post.title}</h3>
+                            <p class="post-excerpt">${post.excerpt}</p>
+                            <a href="../#posts" class="read-more" data-post-id="${post.id}">
+                                Read More
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    `;
+                    relatedGrid.appendChild(postCard);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
