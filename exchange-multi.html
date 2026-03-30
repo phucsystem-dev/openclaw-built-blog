@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Currency Exchange Rates to VND - OpenClaw Blog</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+    <meta name="description" content="USD, EUR, GBP, AUD to VND exchange rates dashboard with real-time rates, historical trends, and conversion calculators.">
+    <style>
+        /* Multi-currency specific styles */
+        .multi-header {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .currency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .currency-card {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .currency-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+        
+        .currency-card.usd {
+            border-top: 4px solid #3b82f6;
+        }
+        
+        .currency-card.eur {
+            border-top: 4px solid #10b981;
+        }
+        
+        .currency-card.gbp {
+            border-top: 4px solid #ef4444;
+        }
+        
+        .currency-card.aud {
+            border-top: 4px solid #f59e0b;
+        }
+        
+        .currency-flag {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .currency-rate {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin: 0.5rem 0;
+        }
+        
+        .currency-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .currency-change.positive {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .currency-change.negative {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .converter-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .converter-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .converter-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .currency-select {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .currency-select select {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .comparison-table th {
+            font-weight: 600;
+            color: var(--text-light);
+            background-color: var(--bg-tertiary);
+        }
+        
+        .provider-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.25rem;
+        }
+        
+        .badge-bank {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .badge-transfer {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .badge-benchmark {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+        
+        @media (max-width: 768px) {
+            .multi-header h1 {
+                font-size: 2rem;
+            }
+            
+            .currency-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .converter-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .converter-swap {
+                order: 3;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <a href="/">
+                        <i class="fas fa-paw"></i>
+                        <span>OpenClaw</span>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/#posts">Blog</a></li>
+                    <li><a href="/gold-prices.html">Gold Prices</a></li>
+                    <li><a href="/exchange-rates.html">AUD/VND</a></li>
+                    <li><a href="/exchange-multi.html" class="active">Multi-Currency</a></li>
+                </ul>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="multi-header">
+        <div class="container">
+            <h1><i class="fas fa-globe-americas"></i> Multi-Currency Exchange Rates to VND</h1>
+            <p class="subtitle">Track USD, EUR, GBP, and AUD to Vietnamese Dong exchange rates with real-time data and historical trends.</p>
+        </div>
+    </div>
+
+    <main class="container">
+        <!-- Currency Cards -->
+        <div class="currency-grid">
+            <div class="currency-card usd">
+                <div class="currency-flag">🇺🇸</div>
+                <h3>US Dollar (USD)</h3>
+                <div class="currency-rate" id="usdRate">25,000</div>
+                <div class="currency-change positive" id="usdChange">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+0.3%</span>
+                </div>
+                <p class="card-subtitle">1 USD = <span id="usdVnd">25,000</span> VND</p>
+            </div>
+            
+            <div class="currency-card eur">
+                <div class="currency-flag">🇪🇺</div>
+                <h3>Euro (EUR)</h3>
+                <div class="currency-rate" id="eurRate">27,000</div>
+                <div class="currency-change negative" id="eurChange">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>-0.2%</span>
+                </div>
+                <p class="card-subtitle">1 EUR = <span id="eurVnd">27,000</span> VND</p>
+            </div>
+            
+            <div class="currency-card gbp">
+                <div class="currency-flag">🇬🇧</div>
+                <h3>British Pound (GBP)</h3>
+                <div class="currency-rate" id="gbpRate">31,500</div>
+                <div class="currency-change positive" id="gbpChange">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+0.5%</span>
+                </div>
+                <p class="card-subtitle">1 GBP = <span id="gbpVnd">31,500</span> VND</p>
+            </div>
+            
+            <div class="currency-card aud">
+                <div class="currency-flag">🇦🇺</div>
+                <h3>Australian Dollar (AUD)</h3>
+                <div class="currency-rate" id="audRate">16,500</div>
+                <div class="currency-change positive" id="audChange">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+0.4%</span>
+                </div>
+                <p class="card-subtitle">1 AUD = <span id="audVnd">16,500</span> VND</p>
+            </div>
+        </div>
+
+        <!-- Currency Converter -->
+        <div class="converter-container">
+            <h3><i class="fas fa-calculator"></i> Multi-Currency Converter</h3>
+            <div class="converter-grid">
+                <div class="converter-input">
+                    <label for="fromAmount">Amount</label>
+                    <div class="currency-select">
+                        <select id="fromCurrency">
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="EUR">🇪🇺 EUR</option>
+                            <option value="GBP">🇬🇧 GBP</option>
+                            <option value="AUD" selected>🇦🇺 AUD</option>
+                            <option value="VND">🇻🇳 VND</option>
+                        </select>
+                    </div>
+                    <input type="number" id="fromAmount" value="100" min="0" step="0.01">
+                </div>
+                
+                <div class="converter-swap">
+                    <button class="btn-swap" id="swapCurrencies">
+                        <i class="fas fa-exchange-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="converter-input">
+                    <label for="toAmount">Converted to</label>
+                    <div class="currency-select">
+                        <select id="toCurrency">
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="EUR">🇪🇺 EUR</option>
+                            <option value="GBP">🇬🇧 GBP</option>
+                            <option value="AUD">🇦🇺 AUD</option>
+                            <option value="VND" selected>🇻🇳 VND</option>
+                        </select>
+                    </div>
+                    <input type="text" id="toAmount" value="1,650,000" readonly>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <div class="rate-label">
+                    Exchange rate: 1 <span id="fromCurrencyLabel">AUD</span> = 
+                    <span id="exchangeRate">16,500</span> <span id="toCurrencyLabel">VND</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate Comparison Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-table"></i> Rate Comparison by Provider</h3>
+                <span class="card-subtitle">Compare rates across different banks and services</span>
+            </div>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>USD/VND</th>
+                        <th>EUR/VND</th>
+                        <th>GBP/VND</th>
+                        <th>AUD/VND</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody id="comparisonTable">
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3><i class="fas fa-chart-line"></i> Currency Trends</h3>
+                <div class="chart-wrapper">
+                    <canvas id="currencyTrendChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3><i class="fas fa-chart-bar"></i> Today's Rates Comparison</h3>
+                <div class="chart-wrapper">
+                    <canvas id="todayRatesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Common Conversions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-exchange-alt"></i> Common Conversions</h3>
+                <span class="card-subtitle">Quick reference for typical amounts</span>
+            </div>
+            <div class="currency-grid" style="margin-top: 1rem;">
+                <div class="currency-card">
+                    <h4><i class="fas fa-coffee"></i> Coffee</h4>
+                    <div class="currency-rate">5 USD</div>
+                    <p class="card-subtitle">≈ 125,000 VND</p>
+                </div>
+                <div class="currency-card">
+                    <h4><i class="fas fa-utensils"></i> Meal</h4>
+                    <div class="currency-rate">20 USD</div>
+                    <p class="card-subtitle">≈ 500,000 VND</p>
+                </div>
+                <div class="currency-card">
+                    <h4><i class="fas fa-hotel"></i> Hotel Night</h4>
+                    <div class="currency-rate">50 USD</div>
+                    <p class="card-subtitle">≈ 1,250,000 VND</p>
+                </div>
+                <div class="currency-card">
+                    <h4><i class="fas fa-plane"></i> Flight</h4>
+                    <div class="currency-rate">500 USD</div>
+                    <p class="card-subtitle">≈ 12,500,000 VND</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Information -->
+        <div class="update-info">
+            <p><i class="fas fa-clock"></i> Last updated: <span id="lastUpdated">Loading...</span></p>
+            <p><i class="fas fa-sync-alt"></i> Next update: <span id="nextUpdate">7:00 AM Melbourne time tomorrow</span></p>
+            <p class="card-subtitle">Exchange rates update daily at 7:00 AM Melbourne time (AEST/AEDT)</p>
+            <p class="card-subtitle">Data source: Frankfurter.app (European Central Bank rates)</p>
+        </div>
+        
+        <!-- Information Section -->
+        <div class="card" style="margin-top: 2rem;">
+            <h3><i class="fas fa-info-circle"></i> About These Exchange Rates</h3>
+            <p>This dashboard tracks four major currencies to Vietnamese Dong:</p>
+            <ul>
+                <li><strong>USD (US Dollar)</strong> - World's primary reserve currency</li>
+                <li><strong>EUR (Euro)</strong> - European Union currency, used by 20+ countries</li>
+                <li><strong>GBP (British Pound)</strong> - United Kingdom currency</li>
+                <li><strong>AUD (Australian Dollar)</strong> - Australian currency</li>
+            </ul>
+            <p><strong>Data Sources:</strong></p>
+            <ul>
+                <li><strong>Mid-market rates:</strong> European Central Bank via Frankfurter.app</li>
+                <li><strong>Bank rates:</strong> Estimated based on typical Vietnamese bank margins</li>
+                <li><strong>Transfer services:</strong> Estimated based on typical service fees</li>
+            </ul>
+            <p><strong>Note:</strong> For large transfers or cash exchange, always check with your provider as rates vary.</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-paw"></i>
+                    <span>OpenClaw</span>
+                </div>
+                <p class="footer-text">Multi-Currency Exchange Rate Dashboard • Part of OpenClaw Blog</p>
+                <p class="copyright">© 2024 OpenClaw Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Multi-Currency Dashboard JavaScript -->
+
+    <!-- Multi-Currency Dashboard JavaScript -->
+    <script src="js/exchange-multi.js"></script>
+</body>
+</html>

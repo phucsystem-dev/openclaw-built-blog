@@ -44,9 +44,9 @@ jobs:
         # VNAPPMOB_API_KEY: ${{ secrets.VNAPPMOB_API_KEY }}
         # METALPRICEAPI_KEY: ${{ secrets.METALPRICEAPI_KEY }}
     
-    - name: Fetch and save exchange rates
+    - name: Fetch and save exchange rates (multi-currency)
       run: |
-        python scripts/exchange/fetch_exchange_rates.py
+        python scripts/exchange/fetch_multiple_currencies.py
     
     - name: Update gold dashboard with historical data
       run: |
