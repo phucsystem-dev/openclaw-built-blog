@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD to VND Exchange Rates - OpenClaw Blog</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+    <meta name="description" content="AUD to VND exchange rate dashboard with real-time rates, historical trends, and conversion calculator. Track Australian Dollar to Vietnamese Dong rates daily.">
+    <style>
+        /* Exchange rate specific styles */
+        .exchange-header {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .exchange-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        
+        .rate-display {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .main-rate {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin: 1rem 0;
+        }
+        
+        .rate-label {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .rate-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        
+        .rate-change.positive {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .rate-change.negative {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .calculator-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .calculator-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .calculator-input label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .calculator-input input {
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1.125rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .calculator-swap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .btn-swap {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .btn-swap:hover {
+            transform: rotate(180deg);
+            background-color: var(--primary-dark);
+        }
+        
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .provider-card {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        
+        .provider-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+        
+        .provider-card.best {
+            border-top: 4px solid #10b981;
+        }
+        
+        .provider-card.worst {
+            border-top: 4px solid #ef4444;
+        }
+        
+        .provider-rate {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin: 0.5rem 0;
+        }
+        
+        .provider-spread {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+        
+        .time-scale-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .time-scale-btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .time-scale-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .time-scale-btn:hover:not(.active) {
+            border-color: var(--primary-color);
+        }
+        
+        .conversion-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .conversion-table th,
+        .conversion-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .conversion-table th {
+            font-weight: 600;
+            color: var(--text-light);
+            background-color: var(--bg-tertiary);
+        }
+        
+        .update-info {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            margin-top: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        @media (max-width: 768px) {
+            .exchange-header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-rate {
+                font-size: 2.5rem;
+            }
+            
+            .calculator-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .calculator-swap {
+                order: 3;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .provider-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <a href="/">
+                        <i class="fas fa-paw"></i>
+                        <span>OpenClaw</span>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/#posts">Blog</a></li>
+                    <li><a href="/gold-prices.html">Gold Prices</a></li>
+                    <li><a href="/exchange-rates.html" class="active">Exchange Rates</a></li>
+                    <li><a href="/#about">About</a></li>
+                </ul>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="exchange-header">
+        <div class="container">
+            <h1><i class="fas fa-money-bill-wave"></i> AUD to VND Exchange Rates</h1>
+            <p class="subtitle">Real-time Australian Dollar to Vietnamese Dong exchange rates with historical trends and conversion calculator. Updated daily at 7 AM Melbourne time.</p>
+        </div>
+    </div>
+
+    <main class="container">
+        <!-- Main Rate Display -->
+        <div class="rate-display">
+            <div class="rate-label">Current Mid-market Rate</div>
+            <div class="main-rate" id="mainRate">16,500.00</div>
+            <div class="rate-label">1 Australian Dollar = <span id="vndAmount">16,500</span> Vietnamese Dong</div>
+            <div class="rate-change positive" id="rateChange">
+                <i class="fas fa-arrow-up"></i>
+                <span>+0.5% today</span>
+            </div>
+        </div>
+
+        <!-- Currency Calculator -->
+        <div class="calculator-container">
+            <h3><i class="fas fa-calculator"></i> Currency Converter</h3>
+            <div class="calculator-grid">
+                <div class="calculator-input">
+                    <label for="audAmount">Australian Dollars (AUD)</label>
+                    <input type="number" id="audAmount" value="100" min="0" step="0.01">
+                </div>
+                
+                <div class="calculator-swap">
+                    <button class="btn-swap" id="swapCurrencies">
+                        <i class="fas fa-exchange-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="calculator-input">
+                    <label for="vndResult">Vietnamese Dong (VND)</label>
+                    <input type="text" id="vndResult" value="1,650,000" readonly>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <div class="rate-label">Using mid-market rate: 1 AUD = <span id="currentRate">16,500</span> VND</div>
+            </div>
+        </div>
+
+        <!-- Provider Comparison -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-bank"></i> Exchange Rates by Provider</h3>
+                <span class="card-subtitle">Compare rates across different banks and services</span>
+            </div>
+            <div class="provider-grid" id="providerGrid">
+                <!-- Provider cards will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3><i class="fas fa-chart-line"></i> Exchange Rate Trend</h3>
+                <div class="time-scale-controls">
+                    <button class="time-scale-btn active" data-scale="1week">1 Week</button>
+                    <button class="time-scale-btn" data-scale="1month">1 Month</button>
+                    <button class="time-scale-btn" data-scale="3months">3 Months</button>
+                    <button class="time-scale-btn" data-scale="1year">1 Year</button>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="rateTrendChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3><i class="fas fa-chart-bar"></i> Provider Comparison</h3>
+                <div class="chart-wrapper">
+                    <canvas id="providerChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Common Conversions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-table"></i> Common Conversions</h3>
+                <span class="card-subtitle">Quick reference for common amounts</span>
+            </div>
+            <table class="conversion-table">
+                <thead>
+                    <tr>
+                        <th>AUD Amount</th>
+                        <th>VND Equivalent</th>
+                        <th>Typical Use</th>
+                    </tr>
+                </thead>
+                <tbody id="conversionTable">
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Update Information -->
+        <div class="update-info">
+            <p><i class="fas fa-clock"></i> Last updated: <span id="lastUpdated">Loading...</span></p>
+            <p><i class="fas fa-sync-alt"></i> Next update: <span id="nextUpdate">7:00 AM Melbourne time tomorrow</span></p>
+            <p class="card-subtitle">Exchange rates update daily at 7:00 AM Melbourne time (AEST/AEDT)</p>
+            <p class="card-subtitle">Rates are for informational purposes only. Actual rates may vary.</p>
+        </div>
+        
+        <!-- Information Section -->
+        <div class="card" style="margin-top: 2rem;">
+            <h3><i class="fas fa-info-circle"></i> About Exchange Rates</h3>
+            <p>This dashboard tracks AUD to VND exchange rates from various sources:</p>
+            <ul>
+                <li><strong>Mid-market rate:</strong> The average between buy and sell rates, used as a benchmark</li>
+                <li><strong>Bank rates:</strong> Rates offered by major Australian banks (typically include fees)</li>
+                <li><strong>Transfer services:</strong> Rates from specialized currency transfer services</li>
+                <li><strong>Data sources:</strong> Rates are collected from public APIs and financial institutions</li>
+            </ul>
+            <p><strong>Note:</strong> For real-time trading or large transfers, always check with your provider as rates fluctuate throughout the day.</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-paw"></i>
+                    <span>OpenClaw</span>
+                </div>
+                <p class="footer-text">AUD to VND Exchange Rate Dashboard • Part of OpenClaw Blog</p>
+                <p class="copyright">© 2024 OpenClaw Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Exchange Rate Dashboard JavaScript -->
+    <script src="js/exchange-dashboard.js"></script>
+    
+    <script>
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize exchange rate dashboard
+            if (typeof ExchangeRateDashboard !== 'undefined') {
+                window.exchangeDashboard = new ExchangeRateDashboard();
+            }
+            
+            // Theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    const themeIcon = themeToggle.querySelector('i');
+                    
+                    if (currentTheme === 'dark') {
+                        document.documentElement.removeAttribute('data-theme');
+                        themeIcon.className = 'fas fa-moon';
+                        localStorage.setItem('theme', 'light');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        themeIcon.className = 'fas fa-sun';
+                        localStorage.setItem('theme', 'dark');
+                    }
+                });
+                
+                // Set initial theme
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    themeToggle.querySelector('i').className = 'fas fa-sun';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
