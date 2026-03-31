@@ -1,5 +1,16 @@
 // OpenClaw Blog - Main JavaScript
+// Uses centralized configuration from js/config.js
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Log configuration if available
+    if (window.BlogConfig) {
+        console.log('📋 OpenClaw Blog v' + BlogConfig.version);
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            BlogConfig.logConfig();
+        }
+    }
+    
+    // Theme Toggle
     // Theme Toggle
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = themeToggle.querySelector('i');

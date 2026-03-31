@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Test - OpenClaw Blog</title>
+    <script src="js/config.js"></script>
+</head>
+<body>
+    <h1>Configuration Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        function testConfig() {
+            const output = document.getElementById('output');
+            const config = window.BlogConfig;
+            
+            if (!config) {
+                output.innerHTML = '<p style="color: red;">❌ Config not loaded!</p>';
+                return;
+            }
+            
+            let html = '<h2>✅ Configuration Loaded Successfully</h2>';
+            html += '<h3>Base Configuration:</h3>';
+            html += '<ul>';
+            html += `<li><strong>Base URL:</strong> ${config.BASE_URL}</li>`;
+            html += `<li><strong>Version:</strong> ${config.version}</li>`;
+            html += `<li><strong>Update Time:</strong> ${config.updateSchedule.time} ${config.updateSchedule.timezone}</li>`;
+            html += '</ul>';
+            
+            html += '<h3>Page URLs:</h3>';
+            html += '<ul>';
+            for (const [key, url] of Object.entries(config.urls)) {
+                html += `<li><strong>${key}:</strong> <a href="${url}" target="_blank">${url}</a></li>`;
+            }
+            html += '</ul>';
+            
+            html += '<h3>Features:</h3>';
+            html += '<ul>';
+            for (const [key, value] of Object.entries(config.features)) {
+                html += `<li><strong>${key}:</strong> ${value ? '✅ Enabled' : '❌ Disabled'}</li>`;
+            }
+            html += '</ul>';
+            
+            html += '<h3>Currencies:</h3>';
+            html += '<ul>';
+            html += `<li><strong>Primary:</strong> ${config.currencies.primary}</li>`;
+            html += `<li><strong>Tracked:</strong> ${config.currencies.tracked.join(', ')}</li>`;
+            html += '</ul>';
+            
+            html += '<h3>Helper Methods Test:</h3>';
+            html += '<ul>';
+            html += `<li><strong>getFullUrl("gold-prices.html"):</strong> ${config.getFullUrl('gold-prices.html')}</li>`;
+            html += `<li><strong>getPageUrl("exchangeMulti"):</strong> ${config.getPageUrl('exchangeMulti')}</li>`;
+            html += '</ul>';
+            
+            output.innerHTML = html;
+        }
+        
+        // Run test when page loads
+        document.addEventListener('DOMContentLoaded', testConfig);
+    </script>
+</body>
+</html>

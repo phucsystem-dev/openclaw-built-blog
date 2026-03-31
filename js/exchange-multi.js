@@ -3,13 +3,36 @@ console.log('Multi-currency exchange dashboard loading...');
 
 class MultiCurrencyDashboard {
     constructor() {
-        this.currencies = {
-            'USD': { name: 'US Dollar', symbol: '🇺🇸', color: '#3b82f6' },
-            'EUR': { name: 'Euro', symbol: '🇪🇺', color: '#10b981' },
-            'GBP': { name: 'British Pound', symbol: '🇬🇧', color: '#ef4444' },
-            'AUD': { name: 'Australian Dollar', symbol: '🇦🇺', color: '#f59e0b' },
-            'VND': { name: 'Vietnamese Dong', symbol: '🇻🇳', color: '#dc2626' }
+        // Use configuration from BlogConfig
+        this.config = window.BlogConfig || {
+            currencies: {
+                tracked: ['USD', 'EUR', 'GBP', 'AUD', 'VND'],
+                symbols: {
+                    'USD': '🇺🇸',
+                    'EUR': '🇪🇺', 
+                    'GBP': '🇬🇧',
+                    'AUD': '🇦🇺',
+                    'VND': '🇻🇳'
+                },
+                colors: {
+                    'USD': '#3b82f6',
+                    'EUR': '#10b981',
+                    'GBP': '#ef4444',
+                    'AUD': '#f59e0b',
+                    'VND': '#dc2626'
+                }
+            }
         };
+        
+        // Build currencies object from config
+        this.currencies = {};
+        this.config.currencies.tracked.forEach(currency => {
+            this.currencies[currency] = {
+                name: this.getCurrencyName(currency),
+                symbol: this.config.currencies.symbols[currency] || '💵',
+                color: this.config.currencies.colors[currency] || '#666666'
+            };
+        });
         
         this.providers = [
             { id: 'mid_market', name: 'Mid-market', type: 'benchmark' },
@@ -24,6 +47,17 @@ class MultiCurrencyDashboard {
         this.charts = {};
         
         this.init();
+    }
+    
+    getCurrencyName(code) {
+        const names = {
+            'USD': 'US Dollar',
+            'EUR': 'Euro',
+            'GBP': 'British Pound',
+            'AUD': 'Australian Dollar',
+            'VND': 'Vietnamese Dong'
+        };
+        return names[code] || code;
     }
 
     async init() {
@@ -48,12 +82,60 @@ class MultiCurrencyDashboard {
                 this.exchangeRates = window.multiCurrencyData.rates;
                 console.log('Loaded multi-currency data');
             } else {
-                // Fallback to mock data
-                console.log('Multi-currency data not found, using mock data');
-                this.exchangeRates = this.generateMockData();
+                // Try to fetch real data if feature is enabled
+                if (this.config.features?.realExchangeRates) {
+                    console.log('Fetching real exchange rates...');
+                    await this.fetchRealExchangeRates();
+                } else {
+                    // Fallback to mock data
+                    console.log('Using mock exchange rate data');
+                    this.exchangeRates = this.generateMockData();
+                }
             }
         } catch (error) {
             console.error('Error loading data:', error);
+            this.exchangeRates = this.generateMockData();
+        }
+    }
+    
+    async fetchRealExchangeRates() {
+        try {
+            // Use API from config
+            const apiUrl = this.config.apis?.exchangeRateAPI || 'https://api.exchangerate-api.com/v4/latest';
+            const currencies = this.config.currencies.tracked.filter(c => c !== 'VND');
+            
+            for (const currency of currencies) {
+                try {
+                    const response = await fetch(`${apiUrl}/${currency}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const rate = data.rates?.VND;
+                        
+                        if (rate) {
+                            // Generate realistic rates based on mid-market
+                            this.exchangeRates[currency] = {
+                                mid_market: rate,
+                                wise: rate * 1.005,
+                                xe: rate * 1.002,
+                                vietcombank: rate * 1.02,
+                                techcombank: rate * 1.019,
+                                bidv: rate * 1.021
+                            };
+                            console.log(`Fetched ${currency}/VND: ${rate}`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Failed to fetch ${currency} rates:`, e);
+                }
+            }
+            
+            // If no rates fetched, use mock data
+            if (Object.keys(this.exchangeRates).length === 0) {
+                this.exchangeRates = this.generateMockData();
+            }
+            
+        } catch (error) {
+            console.error('Error fetching real exchange rates:', error);
             this.exchangeRates = this.generateMockData();
         }
     }
