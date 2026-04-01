@@ -1,5 +1,5 @@
 # OPENCLAW BLOG - COMPACT CONTEXT
-*Last updated: 2026-03-31 03:18 UTC*
+*Last updated: 2026-04-01 06:12 UTC*
 
 ## 🎯 CURRENT STATE
 ✅ **All 5 pages deployed and working**
@@ -73,7 +73,7 @@ gh run list --repo phucsystem-dev/openclaw-built-blog --workflow=daily-data-coll
 - **Automation failed**: Check workflow permissions in repo settings
 
 ## 📝 CHANGE LOG (Recent)
-- 2026-03-31: Clean up test files (7aeda59f)
+- 2026-04-01: Add Gold Charts link to navigation for enhanced gold prices page (21a2dd90)
 - 2026-03-31: Added configurable domain system (`js/config.js`)
 - 2026-03-31: Fixed navigation consistency across all pages
 - 2026-03-30: Added multi-currency dashboard with real API
